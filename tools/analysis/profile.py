@@ -311,7 +311,49 @@ if __name__ == "__main__":
         "--suppressions", metavar="SUPP", default="./tools/analysis/valgrind.supp",
         help="Add a suppressions files to memory leak checking (linux only)."
     )
+
+    # Add argparse arguments for RANGES thresholds
+    parser.add_argument(
+        "--utilization", metavar="UTILIZATION", nargs=3, type=int, default=RANGES["utilization"],
+        help="Thresholds for utilization (default: %(default)s)"
+    )
+    parser.add_argument(
+        "--cpu_time", metavar="CPU_TIME", nargs=3, type=float, default=RANGES["cpu_time"],
+        help="Thresholds for CPU time (default: %(default)s)"
+    )
+    parser.add_argument(
+        "--memory", metavar="MEMORY", nargs=3, type=int, default=RANGES["memory"],
+        help="Thresholds for memory (default: %(default)s)"
+    )
+    parser.add_argument(
+        "--fds", metavar="FDS", nargs=3, type=int, default=RANGES["fds"],
+        help="Thresholds for file descriptors (default: %(default)s)"
+    )
+    parser.add_argument(
+        "--duration", metavar="DURATION", nargs=3, type=float, default=RANGES["duration"],
+        help="Thresholds for duration (default: %(default)s)"
+    )
     args = parser.parse_args()
+
+    # Validate threshold arguments: ensure v1 < v2 < v3
+    def validate_thresholds(name, values):
+        if not (values[0] < values[1] < values[2]):
+            parser.error(f"{name} thresholds must be in increasing order: v1 < v2 < v3 (got {values})")
+
+    validate_thresholds("Utilization", args.utilization)
+    validate_thresholds("CPU time", args.cpu_time)
+    validate_thresholds("Memory", args.memory)
+    validate_thresholds("File descriptors", args.fds)
+    validate_thresholds("Duration", args.duration)
+
+    # Update RANGES with argparse values
+    RANGES.update({
+        "utilization": args.utilization,
+        "cpu_time": args.cpu_time,
+        "memory": args.memory,
+        "fds": args.fds,
+        "duration": args.duration,
+    })
 
     if args.compare:
         with open(args.compare[0]) as fh:
