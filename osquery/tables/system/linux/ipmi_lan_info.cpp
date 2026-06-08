@@ -117,6 +117,15 @@ std::vector<uint8_t> ipmiSendRecv(int fd,
     return {};
   }
 
+  // Guard against intercepting a response dispatched by another process sharing
+  // the same /dev/ipmi* fd at the same moment. The kernel echoes back the
+  // msgid we sent; a mismatch means this packet belongs to someone else.
+  if (recv.msgid != msgid) {
+    VLOG(1) << "IPMI msgid mismatch: sent " << msgid
+            << ", got " << recv.msgid << "; dropping response";
+    return {};
+  }
+
   // recv_buf[0] is the completion code; 0x00 means success.
   if (recv.msg.data_len < 1 || recv_buf[0] != 0x00) {
     return {};
