@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -172,11 +173,24 @@ std::string ipSrcToString(uint8_t src) {
 QueryData getIpmiLanInfo(QueryContext& context) {
   QueryData results;
 
-  int fd = openIpmiDevice();
-  if (fd < 0) {
-    VLOG(1) << "No IPMI device found; skipping ipmi_info";
+  // RAII wrapper: the deleter calls close() automatically when the unique_ptr
+  // goes out of scope — on normal return, early return, or exception — so the
+  // device node is never leaked regardless of how the function exits.
+  auto fdDeleter = [](int* p) {
+    if (p && *p >= 0) {
+      close(*p);
+    }
+    delete p;
+  };
+  int rawFd = openIpmiDevice();
+  std::unique_ptr<int, decltype(fdDeleter)> fdGuard(new int(rawFd), fdDeleter);
+
+  if (rawFd < 0) {
+    VLOG(1) << "No IPMI device found; skipping ipmi_lan_info";
     return results;
   }
+
+  const int fd = rawFd;
 
   long msgid = 1;
 
@@ -270,7 +284,6 @@ QueryData getIpmiLanInfo(QueryContext& context) {
     results.push_back(r);
   }
 
-  close(fd);
   return results;
 }
 
