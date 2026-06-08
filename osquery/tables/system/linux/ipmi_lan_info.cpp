@@ -51,8 +51,8 @@ const uint8_t kIpmiLanParamMac = 5;
 const uint8_t kIpmiLanParamGateway = 12;
 const uint8_t kIpmiLanParamVlanId = 20;
 
-// IPMI response timeout in seconds
-const int kIpmiTimeoutSecs = 5;
+// ipmi response timeout.
+const int kIpmiTimeoutUsecs = 250000; // 250 ms
 
 // Candidate device paths for the OpenIPMI kernel interface
 const std::vector<std::string> kIpmiDevicePaths = {
@@ -100,7 +100,7 @@ std::vector<uint8_t> ipmiSendRecv(int fd,
   fd_set rfds;
   FD_ZERO(&rfds);
   FD_SET(fd, &rfds);
-  struct timeval tv = {kIpmiTimeoutSecs, 0};
+  struct timeval tv = {0, kIpmiTimeoutUsecs};
   if (select(fd + 1, &rfds, nullptr, nullptr, &tv) <= 0) {
     return {};
   }
