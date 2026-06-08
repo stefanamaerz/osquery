@@ -250,6 +250,14 @@ QueryData getIpmiLanInfo(QueryContext& context) {
       r["vlan_id"] = INTEGER(0);
     }
 
+    // Skip inactive virtual interfaces that have no real hardware behind them.
+    // A missing or all-zero MAC is the reliable signal: if the BMC has no MAC
+    // it has no physical presence on that channel.
+    const auto& mac_val = r["mac_address"];
+    if (mac_val.empty() || mac_val == "00:00:00:00:00:00") {
+      continue;
+    }
+
     results.push_back(r);
   }
 
