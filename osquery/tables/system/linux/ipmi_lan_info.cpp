@@ -49,6 +49,7 @@ const uint8_t kIpmiLanParamIpAddr = 3;
 const uint8_t kIpmiLanParamSubnet = 6;
 const uint8_t kIpmiLanParamMac = 5;
 const uint8_t kIpmiLanParamGateway = 12;
+const uint8_t kIpmiLanParamVlanId = 20;
 
 // IPMI response timeout in seconds
 const int kIpmiTimeoutSecs = 5;
@@ -159,7 +160,7 @@ std::string ipSrcToString(uint8_t src) {
 
 } // namespace
 
-QueryData getIpmiInfo(QueryContext& context) {
+QueryData getIpmiLanInfo(QueryContext& context) {
   QueryData results;
 
   int fd = openIpmiDevice();
@@ -233,6 +234,21 @@ QueryData getIpmiInfo(QueryContext& context) {
                            {channel, kIpmiLanParamGateway, 0, 0},
                            msgid++);
     r["gateway"] = (gw.size() >= 5) ? formatIPv4(gw.data() + 1) : "";
+
+    // VLAN ID (param 20): [param_rev, vlan_id_low, vlan_id_high]
+    // Bits 11:0 of the two data bytes hold the VLAN ID; bit 15 is the enable
+    // flag. Report 0 when VLAN tagging is disabled or the parameter is absent.
+    auto vlan = ipmiSendRecv(fd,
+                             kIpmiNetFnTransport,
+                             kIpmiCmdGetLanConfig,
+                             {channel, kIpmiLanParamVlanId, 0, 0},
+                             msgid++);
+    if (vlan.size() >= 3 && (vlan[2] & 0x80)) {
+      const int vlan_id = ((vlan[2] & 0x0F) << 8) | vlan[1];
+      r["vlan_id"] = INTEGER(vlan_id);
+    } else {
+      r["vlan_id"] = INTEGER(0);
+    }
 
     results.push_back(r);
   }
