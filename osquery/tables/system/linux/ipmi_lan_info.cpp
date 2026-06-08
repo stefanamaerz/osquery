@@ -19,6 +19,7 @@
 #endif
 #include <linux/ipmi.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
@@ -118,6 +119,14 @@ std::vector<uint8_t> ipmiSendRecv(int fd,
     return {};
   }
 
+  // Clamp data_len to the actual buffer size before any pointer arithmetic.
+  // IPMICTL_RECEIVE_MSG_TRUNC stops the kernel from writing past recv_buf, but
+  // a buggy or rogue BMC could corrupt the returned data_len field to a value
+  // larger than our buffer — triggering an out-of-bounds read when we slice the
+  // vector below. This single clamp closes that window entirely.
+  const uint16_t safe_len =
+      std::min(recv.msg.data_len, static_cast<uint16_t>(sizeof(recv_buf)));
+
   // Guard against intercepting a response dispatched by another process sharing
   // the same /dev/ipmi* fd at the same moment. The kernel echoes back the
   // msgid we sent; a mismatch means this packet belongs to someone else.
@@ -128,12 +137,11 @@ std::vector<uint8_t> ipmiSendRecv(int fd,
   }
 
   // recv_buf[0] is the completion code; 0x00 means success.
-  if (recv.msg.data_len < 1 || recv_buf[0] != 0x00) {
+  if (safe_len < 1 || recv_buf[0] != 0x00) {
     return {};
   }
 
-  return std::vector<uint8_t>(recv_buf + 1,
-                               recv_buf + recv.msg.data_len);
+  return std::vector<uint8_t>(recv_buf + 1, recv_buf + safe_len);
 }
 
 std::string formatIPv4(const uint8_t* b) {
