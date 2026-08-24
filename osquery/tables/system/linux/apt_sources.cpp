@@ -9,10 +9,9 @@
 
 #include <algorithm>
 #include <array>
-#include <boost/algorithm/string/compare.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/regex.hpp>
-#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/regex/v5/regex_fwd.hpp>
 #include <filesystem>
