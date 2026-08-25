@@ -42,6 +42,7 @@
 
 #ifndef WIN32
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <cctype>
