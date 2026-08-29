@@ -176,6 +176,7 @@ function(generateNativeTables)
     "linux/lxd_certificates.table:linux"
     "linux/lxd_networks.table:linux"
     "linux/lxd_storage_pools.table:linux"
+    "linux/ipmi_lan_info.table:linux"
     "linux/memory_info.table:linux"
     "linux/memory_map.table:linux"
     "linux/md_devices.table:linux"

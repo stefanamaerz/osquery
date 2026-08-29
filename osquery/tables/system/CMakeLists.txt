@@ -63,6 +63,7 @@ function(generateOsqueryTablesSystemSystemtable)
       linux/extended_attributes.cpp
       linux/groups.cpp
       linux/intel_me.cpp
+      linux/ipmi_lan_info.cpp
       linux/kernel_info.cpp
       linux/kernel_modules.cpp
       linux/kernel_keys.cpp
