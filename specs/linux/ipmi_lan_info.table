@@ -1,0 +1,12 @@
+table_name("ipmi_lan_info")
+description("IPMI LAN configuration from the baseboard management controller (BMC). Iterates IPMI channels to find active LAN interfaces.")
+schema([
+    Column("channel", INTEGER, "IPMI channel number"),
+    Column("ip_address_source", TEXT, "Source of the IP address assignment: static, dhcp, bios, other, unknown, or unspecified"),
+    Column("ip_address", TEXT, "IP address configured on the BMC channel"),
+    Column("subnet_mask", TEXT, "Subnet mask configured on the BMC channel"),
+    Column("gateway", TEXT, "Default gateway IP address configured on the BMC channel"),
+    Column("mac_address", TEXT, "MAC address of the BMC network interface on this channel"),
+    Column("vlan_id", INTEGER, "802.1Q VLAN ID (0 if untagged or VLAN disabled)"),
+])
+implementation("ipmi_lan_info@getIpmiLanInfo")
