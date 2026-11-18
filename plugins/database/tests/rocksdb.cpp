@@ -121,8 +121,8 @@ TEST_F(RocksDBDatabasePluginTests, test_events_ttl) {
 }
 
 TEST_F(RocksDBDatabasePluginTests, test_version_matches) {
-  EXPECT_EQ(ROCKSDB_MAJOR, 9);
-  EXPECT_EQ(ROCKSDB_MINOR, 11);
+  EXPECT_EQ(ROCKSDB_MAJOR, 10);
+  EXPECT_EQ(ROCKSDB_MINOR, 6);
   EXPECT_EQ(ROCKSDB_PATCH, 2);
 }
 
